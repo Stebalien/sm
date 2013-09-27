@@ -1,0 +1,24 @@
+#!/bin/bash
+[[ -e $XDG_RUNTIME_DIR/bspwm-panel-fifo ]] || mkfifo $XDG_RUNTIME_DIR/bspwm-panel-fifo
+
+import  gnome-keyring-daemon -s --components=pkcs11,secrets,ssh,gpg
+spawn   python3 -m overkill
+online  owncloud
+defer 1 trayer  --edge top \
+                --align right \
+                --widthtype request \
+                --height 18 \
+                --tint '0x151515' \
+                --transparent true \
+                --expand true \
+                --SetDockType true \
+                --alpha 0
+spawn   nm-applet --sm-disable
+spawn   blueman-applet
+spawn   /usr/lib/lxpolkit/lxpolkit
+spawn   keepassx -min -lock
+spawn   xautolock -locker 'systemctl --user start lock.target'
+spawn   sxhkd $XDG_CONFIG_HOME/bspwm/sxhkdrc
+respawn /usr/bin/devmon --exec-on-drive 'notify-send "Mounting %l" "%f on %d"' --exec-on-unmount 'notify-send "Unmounting %l" "%f"'
+respawn ftjerm
+respawn bspwm -s $XDG_RUNTIME_DIR/bspwm-panel-fifo

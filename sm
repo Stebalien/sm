@@ -1,0 +1,26 @@
+#!/bin/bash
+export XDG_SESSION_PID=$$
+export SESSION=$1
+
+[[ -n "$SESSION" ]] || exit 1
+
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+SESSION_SCRIPT="$XDG_CONFIG_HOME/sm/$SESSION"
+
+[[ -r "$SESSION_SCRIPT" ]] || exit 1
+
+respawn() { (while $@; do true; done;) & }
+defer() { (local t=$1; shift 1; sleep $t && exec $@;) & }
+import() { set -a; eval `$@`; set +a; }
+spawn() { exec $@ & }
+online() { ( while ! nm-online -q -t 30; do true; done; exec $@) & }
+
+kill_children() {
+    pkill -TERM -P $$
+}
+
+trap kill_children EXIT
+
+. "$SESSION_SCRIPT"
+
+wait
