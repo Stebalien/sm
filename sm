@@ -19,6 +19,16 @@ kill_children() {
     pkill -TERM -P $$
 }
 
+# Wait for dbus!
+if [[ -n "$DBUS_SESSION_BUS_ADDRESS" ]]; then
+    p="${DBUS_SESSION_BUS_ADDRESS#*=}"
+    d="$(basedir $p)"
+    while [[ ! -e $p ]]; do
+        inotifywait -t 5 -e create $d
+    done
+    unset p d
+fi
+
 trap kill_children EXIT
 
 . "$SESSION_SCRIPT"
