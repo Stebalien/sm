@@ -22,7 +22,7 @@ kill_children() {
 # Wait for dbus!
 if [[ -n "$DBUS_SESSION_BUS_ADDRESS" ]]; then
     p="${DBUS_SESSION_BUS_ADDRESS#*=}"
-    d="$(basedir $p)"
+    d="$(dirname $p)"
     while [[ ! -e $p ]]; do
         inotifywait -t 5 -e create $d
     done
