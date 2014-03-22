@@ -1,19 +1,34 @@
 #!/bin/bash
+
 export XDG_SESSION_PID=$$
 export SESSION=$1
 
 [[ -n "$SESSION" ]] || exit 1
 
-XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-SESSION_SCRIPT="$XDG_CONFIG_HOME/sm/$SESSION"
+[[ -n "$XDG_CONFIG_HOME" ]] || export XDG_CONFIG_HOME="$HOME/.config"
 
+SESSION_SCRIPT="$XDG_CONFIG_HOME/sm/$SESSION"
 [[ -r "$SESSION_SCRIPT" ]] || exit 1
+
+[[ -n "$XDG_LOG_DIR" ]] || export XDG_LOG_DIR="$XDG_RUNTIME_DIR/log"
+
+# Save files
+exec 3<&1
+exec 4<&2
+
+# Log
+exec 5>"$XDG_LOG_DIR/session-$XDG_SESSION_ID.log"
+exec 1>&5
+exec 2>&5
 
 respawn() { (while $@; do true; done;) & }
 defer() { (local t=$1; shift 1; sleep $t && exec $@;) & }
 import() { set -a; eval `$@`; set +a; }
 spawn() { exec $@ & }
 online() { ( while ! nm-online -q -t 30; do true; done; exec $@) & }
+console() {
+    $@ 1>&3 2>&4
+}
 
 kill_children() {
     pkill -TERM -P $$
