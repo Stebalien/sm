@@ -21,13 +21,13 @@ exec 5>"$XDG_LOG_DIR/session-$XDG_SESSION_ID.log"
 exec 1>&5
 exec 2>&5
 
-respawn() { (while $@; do true; done;) & }
-defer() { (local t=$1; shift 1; sleep $t && exec $@;) & }
-import() { set -a; eval `$@`; set +a; }
-spawn() { exec $@ & }
-online() { ( while ! nm-online -q -t 30; do true; done; exec $@) & }
+respawn() { (while "$@"; do true; done;) & }
+defer() { (local t=$1; shift 1; sleep $t && exec "$@";) & }
+import() { set -a; eval $("$@"); set +a; }
+spawn() { exec "$@" & }
+online() { ( while ! nm-online -q -t 30; do true; done; exec "$@") & }
 console() {
-    $@ 1>&3 2>&4
+    "$@" 1>&3 2>&4
 }
 
 kill_children() {
